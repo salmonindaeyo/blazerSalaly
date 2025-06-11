@@ -1,0 +1,86 @@
+@page "/salary-payment"
+@using RabbitMQ.Client
+@using System.Text
+@using System.Text.Json
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>Salary Payment</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">แบบฟอร์มจ่ายเงินเดือน</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-3">
+                        <label for="employeeId" class="form-label">รหัสพนักงาน:</label>
+                        <input type="text" class="form-control" id="employeeId" @bind="employeeId" placeholder="กรุณากรอกรหัสพนักงาน" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="employeeName" class="form-label">ชื่อพนักงาน:</label>
+                        <input type="text" class="form-control" id="employeeName" @bind="employeeName" placeholder="กรุณากรอกชื่อพนักงาน" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="salary" class="form-label">จำนวนเงินเดือน:</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" id="salary" @bind="salary" placeholder="0.00" />
+                            <span class="input-group-text">฿</span>
+                        </div>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="paymentDate" class="form-label">วันที่จ่าย:</label>
+                        <input type="date" class="form-control" id="paymentDate" @bind="paymentDate" />
+                    </div>
+                    <button class="btn btn-primary w-100" @onclick="SendSalaryPayment">
+                        <i class="bi bi-send me-2"></i>ส่งการจ่ายเงินเดือน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string employeeId = "";
+    private string employeeName = "";
+    private decimal salary;
+    private DateTime paymentDate = DateTime.Now;
+
+    private async Task SendSalaryPayment()
+    {
+        var payment = new
+        {
+            EmployeeId = employeeId,
+            EmployeeName = employeeName,
+            Salary = salary,
+            PaymentDate = paymentDate,
+            TransactionId = Guid.NewGuid().ToString()
+        };
+
+        var factory = new ConnectionFactory { HostName = "rabbitmq" };
+        using var connection = factory.CreateConnection();
+        using var channel = connection.CreateModel();
+
+        channel.QueueDeclare(queue: "salary_payments",
+                            durable: true,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null);
+
+        var message = JsonSerializer.Serialize(payment);
+        var body = Encoding.UTF8.GetBytes(message);
+
+        channel.BasicPublish(exchange: "",
+                            routingKey: "salary_payments",
+                            basicProperties: null,
+                            body: body);
+
+        // Clear form
+        employeeId = "";
+        employeeName = "";
+        salary = 0;
+        paymentDate = DateTime.Now;
+    }
+} 

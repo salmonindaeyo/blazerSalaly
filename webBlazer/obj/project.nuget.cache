@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "O9372S0u90A=",
+  "success": true,
+  "projectFilePath": "/Users/nuttawatrodsomboon/dev/blazerProduct/webBlazer/webBlazer.csproj",
+  "expectedPackageFiles": [
+    "/Users/nuttawatrodsomboon/.nuget/packages/microsoft.netcore.app.ref/6.0.36/microsoft.netcore.app.ref.6.0.36.nupkg.sha512",
+    "/Users/nuttawatrodsomboon/.nuget/packages/microsoft.aspnetcore.app.ref/6.0.36/microsoft.aspnetcore.app.ref.6.0.36.nupkg.sha512",
+    "/Users/nuttawatrodsomboon/.nuget/packages/microsoft.netcore.app.host.osx-arm64/6.0.36/microsoft.netcore.app.host.osx-arm64.6.0.36.nupkg.sha512"
+  ],
+  "logs": []
+}

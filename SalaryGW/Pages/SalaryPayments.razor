@@ -1,0 +1,82 @@
+@page "/salary-payments"
+@using Microsoft.EntityFrameworkCore
+@using SalaryGW.Data
+@using SalaryGW.Models
+@using Microsoft.AspNetCore.Components.Web
+@inject IDbContextFactory<ApplicationDbContext> DbContextFactory
+
+<PageTitle>Salary Payments</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">รายการจ่ายเงินเดือน</h3>
+        </div>
+        <div class="card-body">
+            @if (salaryPayments == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">กำลังโหลด...</span>
+                    </div>
+                    <p class="mt-2">กำลังโหลดข้อมูล...</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>รหัสพนักงาน</th>
+                                <th>ชื่อพนักงาน</th>
+                                <th class="text-end">เงินเดือน</th>
+                                <th>วันที่จ่าย</th>
+                                <th>รหัสธุรกรรม</th>
+                                <th>วันที่สร้าง</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var payment in salaryPayments)
+                            {
+                                <tr>
+                                    <td>@payment.EmployeeId</td>
+                                    <td>@payment.EmployeeName</td>
+                                    <td class="text-end">@payment.Salary.ToString("N2") ฿</td>
+                                    <td>@payment.PaymentDate.ToShortDateString()</td>
+                                    <td><span class="badge bg-info">@payment.TransactionId</span></td>
+                                    <td>@payment.CreatedAt.ToString("g")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SalaryPayment> salaryPayments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            using var context = await DbContextFactory.CreateDbContextAsync();
+            salaryPayments = await context.SalaryPayments
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("LoadData Error: " + ex.Message);
+            throw;
+        }
+    }
+} 

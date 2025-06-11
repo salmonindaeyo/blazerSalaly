@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "IfTpzK+xO58=",
+  "success": true,
+  "projectFilePath": "/Users/nuttawatrodsomboon/dev/blazerProduct/iCash/iCash.csproj",
+  "expectedPackageFiles": [
+    "/Users/nuttawatrodsomboon/.nuget/packages/rabbitmq.client/7.1.2/rabbitmq.client.7.1.2.nupkg.sha512",
+    "/Users/nuttawatrodsomboon/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
+    "/Users/nuttawatrodsomboon/.nuget/packages/system.threading.ratelimiting/8.0.0/system.threading.ratelimiting.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

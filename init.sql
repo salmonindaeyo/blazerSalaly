@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS "SalaryPayments" (
+    "Id" SERIAL PRIMARY KEY,
+    "EmployeeId" VARCHAR(100) NOT NULL,
+    "EmployeeName" VARCHAR(255) NOT NULL,
+    "Salary" NUMERIC(18,2) NOT NULL,
+    "PaymentDate" TIMESTAMP NOT NULL,
+    "TransactionId" VARCHAR(100) NOT NULL,
+    "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+); 
