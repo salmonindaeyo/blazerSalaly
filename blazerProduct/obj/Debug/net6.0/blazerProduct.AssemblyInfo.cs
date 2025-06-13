@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("blazerProduct")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2bc6a0883a9e8d0ca5e990630bfb8219832cc172")]
 [assembly: System.Reflection.AssemblyProductAttribute("blazerProduct")]
 [assembly: System.Reflection.AssemblyTitleAttribute("blazerProduct")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

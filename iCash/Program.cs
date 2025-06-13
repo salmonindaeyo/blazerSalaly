@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using RabbitMQ.Client;
 using System.Text;
 using System.Runtime.CompilerServices;
+using iCash.Services;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Main")]
 
@@ -15,6 +16,13 @@ internal class Program
         // Add services to the container.
         builder.Services.AddRazorPages();
         builder.Services.AddServerSideBlazor();
+
+        // Register EncryptionService
+        var encryptionSettings = builder.Configuration.GetSection("Encryption");
+        builder.Services.AddSingleton(new EncryptionService(
+            encryptionSettings["Key"],
+            null // IV is no longer needed
+        ));
 
         var app = builder.Build();
 

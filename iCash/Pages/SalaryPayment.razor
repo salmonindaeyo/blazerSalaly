@@ -3,6 +3,8 @@
 @using System.Text
 @using System.Text.Json
 @using Microsoft.AspNetCore.Components.Web
+@using iCash.Services
+@inject EncryptionService EncryptionService
 
 <PageTitle>Salary Payment</PageTitle>
 
@@ -59,18 +61,21 @@
             TransactionId = Guid.NewGuid().ToString()
         };
 
+        var message = JsonSerializer.Serialize(payment);
+        var encryptedMessage = EncryptionService.Encrypt(message);
+        
+        var base64Message = Convert.ToBase64String(Encoding.UTF8.GetBytes(encryptedMessage));
+        var body = Encoding.UTF8.GetBytes(base64Message);
+
         var factory = new ConnectionFactory { HostName = "rabbitmq" };
         using var connection = factory.CreateConnection();
         using var channel = connection.CreateModel();
 
         channel.QueueDeclare(queue: "salary_payments",
-                            durable: true,
-                            exclusive: false,
-                            autoDelete: false,
+                            durable: true, //ไม่หาย เมื่อรีเซิฟ
+                            exclusive: false, //ไม่ให้เข้าหลายconnect
+                            autoDelete: false, 
                             arguments: null);
-
-        var message = JsonSerializer.Serialize(payment);
-        var body = Encoding.UTF8.GetBytes(message);
 
         channel.BasicPublish(exchange: "",
                             routingKey: "salary_payments",

@@ -6,9 +6,24 @@ using RabbitMQ.Client.Events;
 using SalaryProcessor.Data;
 using SalaryProcessor.Models;
 using Microsoft.EntityFrameworkCore;
+using iCash.Services;
+using Microsoft.Extensions.Configuration;
 
 public class Worker : BackgroundService
 {
+    private readonly EncryptionService _encryptionService;
+
+    public Worker(IConfiguration configuration)
+    {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        var encryptionSettings = configuration.GetSection("Encryption");
+        _encryptionService = new EncryptionService(
+            encryptionSettings["Key"],
+            null // IV is no longer needed
+        );
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var factory = new ConnectionFactory { HostName = "rabbitmq" };
@@ -25,50 +40,76 @@ public class Worker : BackgroundService
             .UseNpgsql("Host=postgres;Database=salarydb;Username=postgres;Password=YourStrong@Passw0rd")
             .Options;
 
-        using var dbContext = new ApplicationDbContext(options);
-        dbContext.Database.EnsureCreated();
+        using (var checkDbContext = new ApplicationDbContext(options))
+        {
+            checkDbContext.Database.EnsureCreated();
+        }
 
         var consumer = new EventingBasicConsumer(channel);
         consumer.Received += (model, ea) =>
         {
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-            Console.WriteLine($"Received message: {message}");
-
             try
             {
+                var body = ea.Body.ToArray();
+                var encryptedMessage = Encoding.UTF8.GetString(body);
+                Console.WriteLine(encryptedMessage);
+                
+                byte[] decodedBytes = Convert.FromBase64String(encryptedMessage);
+                string decodedText = Encoding.UTF8.GetString(decodedBytes);
+                
+                var message = _encryptionService.Decrypt(decodedText);
+                Console.WriteLine("--------------------------------");
+                Console.WriteLine(message);
                 var payment = JsonSerializer.Deserialize<SalaryPayment>(message);
 
-                // แปลง PaymentDate เป็น UTC
-                if (payment.PaymentDate.Kind == DateTimeKind.Local)
-                    payment.PaymentDate = payment.PaymentDate.ToUniversalTime();
-                else if (payment.PaymentDate.Kind == DateTimeKind.Unspecified)
-                    payment.PaymentDate = DateTime.SpecifyKind(payment.PaymentDate, DateTimeKind.Utc);
+                payment.PaymentDate = payment.PaymentDate.ToUniversalTime();
+                payment.CreatedAt = DateTime.UtcNow; // กำหนดค่า CreatedAt เป็นเวลาปัจจุบันใน UTC
 
-                // ถ้ามี CreatedAt ใน model และต้อง set เอง ให้แปลงเป็น UTC เช่นกัน
-                if (payment.GetType().GetProperty("CreatedAt") != null)
+                using (var dbContext = new ApplicationDbContext(options))
                 {
-                    var createdAt = (DateTime)payment.GetType().GetProperty("CreatedAt").GetValue(payment);
-                    if (createdAt.Kind == DateTimeKind.Local)
-                        payment.GetType().GetProperty("CreatedAt").SetValue(payment, createdAt.ToUniversalTime());
-                    else if (createdAt.Kind == DateTimeKind.Unspecified)
-                        payment.GetType().GetProperty("CreatedAt").SetValue(payment, DateTime.SpecifyKind(createdAt, DateTimeKind.Utc));
+                    // ตรวจสอบว่ามีข้อมูลนี้อยู่แล้วหรือไม่
+                    var existingPayment = dbContext.SalaryPayments
+                        .FirstOrDefault(p => p.TransactionId == payment.TransactionId);
+                        
+                    if (existingPayment != null)
+                    {
+                        Console.WriteLine($"ข้อมูลการจ่ายเงินเดือนสำหรับ TransactionId {payment.TransactionId} มีอยู่แล้ว ไม่บันทึกซ้ำ");
+                    }
+                    else
+                    {
+                        dbContext.SalaryPayments.Add(payment);
+                        dbContext.SaveChanges();
+                        Console.WriteLine($"บันทึกข้อมูลการจ่ายเงินเดือนสำหรับ {payment.EmployeeName} เรียบร้อยแล้ว");
+                    }
                 }
 
-                dbContext.SalaryPayments.Add(payment);
-                dbContext.SaveChanges();
-                Console.WriteLine($"Successfully saved payment for employee {payment.EmployeeName}");
+                channel.BasicAck(ea.DeliveryTag, false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error processing message: {ex.Message}");
+                Console.WriteLine($"เกิดข้อผิดพลาด: {ex.Message}");
+                
                 if (ex.InnerException != null)
-                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
+                {
+                    Console.WriteLine($"รายละเอียดข้อผิดพลาด: {ex.InnerException.Message}");
+                }
+                
+                if (ex.InnerException != null && (ex.InnerException.Message.Contains("duplicate key") || 
+                                                ex.InnerException.Message.Contains("unique constraint")))
+                {
+                    Console.WriteLine("ข้อมูลซ้ำ จึงไม่บันทึกข้อมูลนี้");
+                    channel.BasicAck(ea.DeliveryTag, false);
+                }
+                else
+                {
+                    // หากเป็นข้อผิดพลาดอื่น ให้ส่งข้อความกลับคิวเพื่อลองใหม่
+                    channel.BasicNack(ea.DeliveryTag, false, true);
+                }
             }
         };
 
         channel.BasicConsume(queue: "salary_payments",
-                            autoAck: true,
+                            autoAck: false,
                             consumer: consumer);
 
         while (!stoppingToken.IsCancellationRequested)

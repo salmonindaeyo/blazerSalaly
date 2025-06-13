@@ -1,16 +1,21 @@
 ﻿<Properties StartupConfiguration="{D516A49A-9639-4A9F-9157-9294D7C484D4}|Default">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints />
-  <MonoDevelop.Ide.ItemProperties.webBlazer PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" FirstBuild="True" />
-  <MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.webBlazer PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="webBlazer/Data/WeatherForecast.cs">
+    <Files>
+      <File FileName="webBlazer/Program.cs" />
+      <File FileName="webBlazer/Data/WeatherForecast.cs" Line="1" Column="1" />
+      <File FileName="webBlazer/Data/WeatherForecastService.cs" />
+    </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
           <Node name="blazerProduct" expanded="True">
-            <Node name="blazerProduct" expanded="True">
-              <Node name="Dependencies" selected="True" />
-            </Node>
+            <Node name="SalaryProcessor" selected="True" />
           </Node>
         </State>
       </Pad>
