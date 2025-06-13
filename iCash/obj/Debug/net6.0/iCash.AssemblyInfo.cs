@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("iCash")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+409d3c77c3aac1964a39b21995d4497305df1e02")]
 [assembly: System.Reflection.AssemblyProductAttribute("iCash")]
 [assembly: System.Reflection.AssemblyTitleAttribute("iCash")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
